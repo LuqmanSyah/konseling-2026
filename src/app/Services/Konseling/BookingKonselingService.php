@@ -6,14 +6,71 @@ use App\Models\BookingKonseling;
 use App\Models\CatatanKonseling;
 use App\Models\JadwalKonseling;
 use App\Models\Konselor;
+use App\Models\Mahasiswa;
 use App\Models\NotifikasiSimulasi;
 use App\Models\Rujukan;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class BookingKonselingService
 {
+    /**
+     * @param  array{kategori: string, metode: string, jadwal_id: int|string, keluhan_awal: string}  $data
+     */
+    public function submitFromStudent(Mahasiswa $mahasiswa, array $data): BookingKonseling
+    {
+        return DB::transaction(function () use ($mahasiswa, $data): BookingKonseling {
+            $mahasiswa->loadMissing('user');
+
+            $jadwal = JadwalKonseling::query()
+                ->lockForUpdate()
+                ->find($data['jadwal_id']);
+
+            if ($jadwal === null) {
+                throw ValidationException::withMessages([
+                    'jadwal_id' => 'Jadwal konseling tidak ditemukan.',
+                ]);
+            }
+
+            if ($jadwal->status !== JadwalKonseling::STATUS_TERSEDIA) {
+                throw ValidationException::withMessages([
+                    'jadwal_id' => 'Jadwal konseling sudah tidak tersedia.',
+                ]);
+            }
+
+            if ($jadwal->metode !== $data['metode']) {
+                throw ValidationException::withMessages([
+                    'jadwal_id' => 'Jadwal yang dipilih tidak sesuai dengan metode konseling.',
+                ]);
+            }
+
+            $booking = $this->createBookingWithUniqueCode([
+                'mahasiswa_id' => $mahasiswa->id,
+                'jadwal_id' => $jadwal->id,
+                'konselor_id' => $jadwal->konselor_id,
+                'kategori' => $data['kategori'],
+                'metode' => $data['metode'],
+                'keluhan_awal' => $data['keluhan_awal'],
+                'status' => BookingKonseling::STATUS_DIAJUKAN,
+            ]);
+
+            $jadwal->forceFill([
+                'status' => JadwalKonseling::STATUS_TERPAKAI,
+            ])->save();
+
+            $this->recordNotification(
+                $booking,
+                $mahasiswa->user,
+                'pengajuan_dibuat',
+                'Pengajuan konseling berhasil dibuat dan menunggu verifikasi Admin BKTS.'
+            );
+
+            return $booking;
+        });
+    }
+
     public function approve(BookingKonseling $booking): void
     {
         DB::transaction(function () use ($booking): void {
@@ -253,6 +310,40 @@ class BookingKonselingService
         $code = str_starts_with($bookingCode, 'BKTS-') ? $bookingCode : 'BKTS-' . $bookingCode;
 
         return 'https://meet.mock/' . $code;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    private function createBookingWithUniqueCode(array $attributes): BookingKonseling
+    {
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            try {
+                return BookingKonseling::create([
+                    'kode_booking' => $this->makeBookingCode(),
+                    ...$attributes,
+                ]);
+            } catch (QueryException $exception) {
+                if (! $this->isUniqueBookingCodeException($exception)) {
+                    throw $exception;
+                }
+            }
+        }
+
+        throw ValidationException::withMessages([
+            'kode_booking' => 'Kode booking gagal dibuat. Silakan coba lagi.',
+        ]);
+    }
+
+    private function makeBookingCode(): string
+    {
+        return 'BKTS-' . now()->format('Ymd') . '-' . str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    }
+
+    private function isUniqueBookingCodeException(QueryException $exception): bool
+    {
+        return (string) $exception->getCode() === '23000'
+            && str_contains($exception->getMessage(), 'kode_booking');
     }
 
     private function recordNotification(BookingKonseling $booking, ?User $recipient, string $type, string $message): void
