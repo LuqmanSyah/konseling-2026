@@ -7,7 +7,6 @@ use App\Http\Middleware\FilamentAuthenticateSession;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -35,8 +34,10 @@ class KonselorPanelProvider extends PanelProvider
             ])
             ->maxContentWidth(MaxWidth::SevenExtraLarge)
             ->sidebarCollapsibleOnDesktop()
+            ->discoverResources(in: app_path('Filament/Konselor/Resources'), for: 'App\\Filament\\Konselor\\Resources')
+            ->discoverPages(in: app_path('Filament/Konselor/Pages'), for: 'App\\Filament\\Konselor\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                \App\Filament\Konselor\Pages\Dashboard::class,
             ])
             ->middleware([
                 EncryptCookies::class,

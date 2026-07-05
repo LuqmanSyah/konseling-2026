@@ -3,7 +3,9 @@
 namespace App\Services\Konseling;
 
 use App\Models\BookingKonseling;
+use App\Models\CatatanKonseling;
 use App\Models\JadwalKonseling;
+use App\Models\Konselor;
 use App\Models\NotifikasiSimulasi;
 use App\Models\Rujukan;
 use App\Models\User;
@@ -106,6 +108,105 @@ class BookingKonselingService
     }
 
     /**
+     * @param  array{catatan_hasil: string, rekomendasi: string}  $data
+     */
+    public function saveCounselingNote(BookingKonseling $booking, array $data, Konselor $konselor): CatatanKonseling
+    {
+        return DB::transaction(function () use ($booking, $data, $konselor): CatatanKonseling {
+            $booking->refresh();
+            $this->ensureAssignedCounselor($booking, $konselor);
+
+            if (in_array($booking->status, [
+                BookingKonseling::STATUS_DIAJUKAN,
+                BookingKonseling::STATUS_DIBATALKAN,
+            ], true)) {
+                throw ValidationException::withMessages([
+                    'status' => 'Catatan hanya dapat diisi untuk booking yang sudah dijadwalkan.',
+                ]);
+            }
+
+            return CatatanKonseling::updateOrCreate(
+                ['booking_id' => $booking->id],
+                [
+                    'konselor_id' => $konselor->id,
+                    'catatan_hasil' => $data['catatan_hasil'],
+                    'rekomendasi' => $data['rekomendasi'],
+                ],
+            );
+        });
+    }
+
+    /**
+     * @param  array{catatan_hasil: string, rekomendasi: string}  $data
+     */
+    public function completeCounseling(BookingKonseling $booking, array $data, Konselor $konselor): CatatanKonseling
+    {
+        return DB::transaction(function () use ($booking, $data, $konselor): CatatanKonseling {
+            $booking->refresh();
+            $this->ensureAssignedCounselor($booking, $konselor);
+
+            if ($booking->status !== BookingKonseling::STATUS_DIJADWALKAN) {
+                throw ValidationException::withMessages([
+                    'status' => 'Hanya booking berstatus Dijadwalkan yang dapat ditandai selesai.',
+                ]);
+            }
+
+            $note = CatatanKonseling::updateOrCreate(
+                ['booking_id' => $booking->id],
+                [
+                    'konselor_id' => $konselor->id,
+                    'catatan_hasil' => $data['catatan_hasil'],
+                    'rekomendasi' => $data['rekomendasi'],
+                ],
+            );
+
+            $booking->forceFill([
+                'status' => BookingKonseling::STATUS_SELESAI,
+            ])->save();
+
+            $booking->loadMissing('mahasiswa.user');
+
+            $this->recordNotification(
+                $booking,
+                $booking->mahasiswa->user,
+                'booking_selesai',
+                'Sesi konseling Anda telah selesai.'
+            );
+
+            return $note;
+        });
+    }
+
+    /**
+     * @param  array{catatan_hasil: string, rekomendasi: string}  $noteData
+     * @param  array{tujuan_rujukan: string, alasan_rujukan: string, ringkasan_tindak_lanjut?: string|null}  $referralData
+     */
+    public function referCounseling(BookingKonseling $booking, array $noteData, array $referralData, Konselor $konselor, User $creator): Rujukan
+    {
+        return DB::transaction(function () use ($booking, $noteData, $referralData, $konselor, $creator): Rujukan {
+            $booking->refresh();
+            $this->ensureAssignedCounselor($booking, $konselor);
+
+            if ($booking->status !== BookingKonseling::STATUS_DIJADWALKAN) {
+                throw ValidationException::withMessages([
+                    'status' => 'Hanya booking berstatus Dijadwalkan yang dapat dirujuk oleh konselor.',
+                ]);
+            }
+
+            CatatanKonseling::updateOrCreate(
+                ['booking_id' => $booking->id],
+                [
+                    'konselor_id' => $konselor->id,
+                    'catatan_hasil' => $noteData['catatan_hasil'],
+                    'rekomendasi' => $noteData['rekomendasi'],
+                ],
+            );
+
+            return $this->refer($booking, $referralData, $creator);
+        });
+    }
+
+    /**
      * @param  array{tujuan_rujukan: string, alasan_rujukan: string, ringkasan_tindak_lanjut?: string|null}  $data
      */
     public function refer(BookingKonseling $booking, array $data, User $creator): Rujukan
@@ -133,6 +234,16 @@ class BookingKonselingService
                 'status' => BookingKonseling::STATUS_DIRUJUK,
             ])->save();
 
+            User::role('admin_bkts')
+                ->where('status', User::STATUS_AKTIF)
+                ->get()
+                ->each(fn (User $admin): mixed => $this->recordNotification(
+                    $booking,
+                    $admin,
+                    'booking_dirujuk',
+                    'Mahasiswa membutuhkan tindak lanjut rujukan.'
+                ));
+
             return $rujukan;
         });
     }
@@ -158,6 +269,15 @@ class BookingKonselingService
             'channel' => NotifikasiSimulasi::CHANNEL_SISTEM,
             'status' => NotifikasiSimulasi::STATUS_TERCATAT,
         ]);
+    }
+
+    private function ensureAssignedCounselor(BookingKonseling $booking, Konselor $konselor): void
+    {
+        if ($booking->konselor_id !== $konselor->id) {
+            throw ValidationException::withMessages([
+                'booking_id' => 'Konselor hanya dapat menangani booking yang ditugaskan kepadanya.',
+            ]);
+        }
     }
 
     private function scheduleHasActiveBooking(BookingKonseling $booking): bool
