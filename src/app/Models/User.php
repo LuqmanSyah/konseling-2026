@@ -7,6 +7,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -14,7 +15,16 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory,HasRoles, Notifiable;
+    use HasFactory, HasRoles, Notifiable;
+
+    public const STATUS_AKTIF = 'aktif';
+
+    public const STATUS_NONAKTIF = 'nonaktif';
+
+    public const STATUSES = [
+        self::STATUS_AKTIF,
+        self::STATUS_NONAKTIF,
+    ];
 
     /**
      * The attributes that are mass assignable.
@@ -26,6 +36,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'name',
         'email',
         'password',
+        'status',
     ];
 
     /**
@@ -48,7 +59,18 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'status' => 'string',
         ];
+    }
+
+    public function mahasiswa(): HasOne
+    {
+        return $this->hasOne(Mahasiswa::class);
+    }
+
+    public function konselor(): HasOne
+    {
+        return $this->hasOne(Konselor::class);
     }
 
     public function getFilamentAvatarUrl(): ?string
@@ -64,6 +86,10 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
 
     public function canAccessPanel(Panel $panel): bool
     {
+        if ($this->status !== self::STATUS_AKTIF) {
+            return false;
+        }
+
         return match ($panel->getId()) {
             'admin' => $this->hasRole('super_admin'),
             'bkts' => $this->hasRole('admin_bkts'),

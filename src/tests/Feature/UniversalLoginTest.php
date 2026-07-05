@@ -99,6 +99,15 @@ it('forbids users from accessing another role panel', function (): void {
         ->assertForbidden();
 });
 
+it('forbids inactive users from accessing their role panel', function (): void {
+    $user = createUserWithRole('super_admin');
+    $user->forceFill(['status' => User::STATUS_NONAKTIF])->save();
+
+    $this->actingAs($user)
+        ->get('/admin')
+        ->assertForbidden();
+});
+
 it('logs out and returns to the universal login page', function (): void {
     $user = createUserWithRole('super_admin');
 
