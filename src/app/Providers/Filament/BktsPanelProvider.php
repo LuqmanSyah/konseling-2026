@@ -7,7 +7,6 @@ use App\Http\Middleware\FilamentAuthenticateSession;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -35,8 +34,10 @@ class BktsPanelProvider extends PanelProvider
             ])
             ->maxContentWidth(MaxWidth::SevenExtraLarge)
             ->sidebarCollapsibleOnDesktop()
+            ->discoverResources(in: app_path('Filament/Bkts/Resources'), for: 'App\\Filament\\Bkts\\Resources')
+            ->discoverPages(in: app_path('Filament/Bkts/Pages'), for: 'App\\Filament\\Bkts\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                \App\Filament\Bkts\Pages\Dashboard::class,
             ])
             ->middleware([
                 EncryptCookies::class,
