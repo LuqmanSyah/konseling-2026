@@ -19,7 +19,7 @@ class JadwalKonselingSeeder extends Seeder
             JadwalKonseling::updateOrCreate(
                 [
                     'konselor_id' => $schedule['konselor_id'],
-                    'tanggal' => $schedule['tanggal'],
+                    'hari' => $schedule['hari'],
                     'jam_mulai' => $schedule['jam_mulai'],
                 ],
                 [
@@ -39,7 +39,7 @@ class JadwalKonselingSeeder extends Seeder
         return [
             [
                 'konselor_id' => $konselorId,
-                'tanggal' => now()->addDays(1)->toDateString(),
+                'hari' => JadwalKonseling::HARI_SENIN,
                 'jam_mulai' => '09:00:00',
                 'jam_selesai' => '10:00:00',
                 'metode' => JadwalKonseling::METODE_ONLINE,
@@ -47,7 +47,7 @@ class JadwalKonselingSeeder extends Seeder
             ],
             [
                 'konselor_id' => $konselorId,
-                'tanggal' => now()->addDays(2)->toDateString(),
+                'hari' => JadwalKonseling::HARI_SELASA,
                 'jam_mulai' => '10:00:00',
                 'jam_selesai' => '11:00:00',
                 'metode' => JadwalKonseling::METODE_TATAP_MUKA,
@@ -55,7 +55,7 @@ class JadwalKonselingSeeder extends Seeder
             ],
             [
                 'konselor_id' => $konselorId,
-                'tanggal' => now()->addDays(3)->toDateString(),
+                'hari' => JadwalKonseling::HARI_RABU,
                 'jam_mulai' => '13:00:00',
                 'jam_selesai' => '14:00:00',
                 'metode' => JadwalKonseling::METODE_ONLINE,
@@ -63,7 +63,7 @@ class JadwalKonselingSeeder extends Seeder
             ],
             [
                 'konselor_id' => $konselorId,
-                'tanggal' => now()->subDays(3)->toDateString(),
+                'hari' => JadwalKonseling::HARI_KAMIS,
                 'jam_mulai' => '08:00:00',
                 'jam_selesai' => '09:00:00',
                 'metode' => JadwalKonseling::METODE_TATAP_MUKA,
@@ -71,7 +71,7 @@ class JadwalKonselingSeeder extends Seeder
             ],
             [
                 'konselor_id' => $konselorId,
-                'tanggal' => now()->subDays(2)->toDateString(),
+                'hari' => JadwalKonseling::HARI_JUMAT,
                 'jam_mulai' => '11:00:00',
                 'jam_selesai' => '12:00:00',
                 'metode' => JadwalKonseling::METODE_ONLINE,
@@ -79,7 +79,7 @@ class JadwalKonselingSeeder extends Seeder
             ],
             [
                 'konselor_id' => $konselorId,
-                'tanggal' => now()->addDays(4)->toDateString(),
+                'hari' => JadwalKonseling::HARI_SABTU,
                 'jam_mulai' => '15:00:00',
                 'jam_selesai' => '16:00:00',
                 'metode' => JadwalKonseling::METODE_TATAP_MUKA,

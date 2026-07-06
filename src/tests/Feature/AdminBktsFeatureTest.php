@@ -80,7 +80,7 @@ it('allows admin bkts to create a valid counseling schedule', function (): void 
     Livewire::test(CreateJadwalKonseling::class)
         ->fillForm([
             'konselor_id' => $konselor->id,
-            'tanggal' => '2026-07-10',
+            'hari' => JadwalKonseling::HARI_SENIN,
             'jam_mulai' => '09:00:00',
             'jam_selesai' => '10:00:00',
             'metode' => JadwalKonseling::METODE_ONLINE,
@@ -91,7 +91,7 @@ it('allows admin bkts to create a valid counseling schedule', function (): void 
 
     $this->assertDatabaseHas('jadwal_konseling', [
         'konselor_id' => $konselor->id,
-        'tanggal' => '2026-07-10 00:00:00',
+        'hari' => JadwalKonseling::HARI_SENIN,
         'metode' => JadwalKonseling::METODE_ONLINE,
         'status' => JadwalKonseling::STATUS_TERSEDIA,
     ]);
@@ -104,10 +104,36 @@ it('rejects schedules where end time is not after start time', function (): void
     Livewire::test(CreateJadwalKonseling::class)
         ->fillForm([
             'konselor_id' => $konselor->id,
-            'tanggal' => '2026-07-10',
+            'hari' => JadwalKonseling::HARI_SENIN,
             'jam_mulai' => '10:00:00',
             'jam_selesai' => '09:00:00',
             'metode' => JadwalKonseling::METODE_ONLINE,
+            'status' => JadwalKonseling::STATUS_TERSEDIA,
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['jam_selesai']);
+});
+
+it('rejects overlapping weekly schedules for the same counselor and day', function (): void {
+    $this->actingAs(createBktsAdminUser());
+    $konselor = createKonselorProfile();
+
+    JadwalKonseling::create([
+        'konselor_id' => $konselor->id,
+        'hari' => JadwalKonseling::HARI_SENIN,
+        'jam_mulai' => '09:00:00',
+        'jam_selesai' => '10:00:00',
+        'metode' => JadwalKonseling::METODE_ONLINE,
+        'status' => JadwalKonseling::STATUS_TERSEDIA,
+    ]);
+
+    Livewire::test(CreateJadwalKonseling::class)
+        ->fillForm([
+            'konselor_id' => $konselor->id,
+            'hari' => JadwalKonseling::HARI_SENIN,
+            'jam_mulai' => '09:30:00',
+            'jam_selesai' => '10:30:00',
+            'metode' => JadwalKonseling::METODE_TATAP_MUKA,
             'status' => JadwalKonseling::STATUS_TERSEDIA,
         ])
         ->call('create')
@@ -259,7 +285,7 @@ function createBktsBooking(string $status = BookingKonseling::STATUS_DIAJUKAN): 
 
     $jadwal = JadwalKonseling::create([
         'konselor_id' => $konselor->id,
-        'tanggal' => '2026-07-10',
+        'hari' => JadwalKonseling::HARI_SENIN,
         'jam_mulai' => '09:00:00',
         'jam_selesai' => '10:00:00',
         'metode' => JadwalKonseling::METODE_ONLINE,

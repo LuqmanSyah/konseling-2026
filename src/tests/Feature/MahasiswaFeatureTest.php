@@ -69,6 +69,21 @@ it('keeps non student users out of the student panel', function (): void {
         ->assertForbidden();
 });
 
+it('shows available counselor schedules as a selectable table', function (): void {
+    $mahasiswa = createMahasiswaFeatureStudent('MHS-2026-009');
+    createMahasiswaFeatureSchedule();
+
+    $this->actingAs($mahasiswa->user)
+        ->get(BookingKonselingResource::getUrl('create', panel: 'mahasiswa'))
+        ->assertOk()
+        ->assertSee('Jadwal Tersedia')
+        ->assertSee('Pilih')
+        ->assertSee('Hari')
+        ->assertSee('Jam')
+        ->assertSee('Konselor senin online')
+        ->assertSee('Online');
+});
+
 it('lets student submit counseling request and reserves the schedule', function (): void {
     $mahasiswa = createMahasiswaFeatureStudent('MHS-2026-002');
     $jadwal = createMahasiswaFeatureSchedule();
@@ -105,7 +120,7 @@ it('rejects unavailable schedules and method mismatches', function (): void {
     $usedSchedule = createMahasiswaFeatureSchedule(status: JadwalKonseling::STATUS_TERPAKAI);
     $offlineSchedule = createMahasiswaFeatureSchedule(
         method: JadwalKonseling::METODE_TATAP_MUKA,
-        date: '2026-07-11',
+        day: JadwalKonseling::HARI_SELASA,
     );
 
     $this->actingAs($mahasiswa->user);
@@ -159,7 +174,7 @@ it('only shows student own bookings and blocks direct access to other bookings',
     $otherMahasiswa = createMahasiswaFeatureStudent('MHS-2026-006');
 
     $ownBooking = createMahasiswaFeatureBooking($mahasiswa, 'BKTS-20260705-000001');
-    $otherBooking = createMahasiswaFeatureBooking($otherMahasiswa, 'BKTS-20260705-000002', date: '2026-07-11');
+    $otherBooking = createMahasiswaFeatureBooking($otherMahasiswa, 'BKTS-20260705-000002', day: JadwalKonseling::HARI_SELASA);
 
     $this->actingAs($mahasiswa->user)
         ->get(BookingKonselingResource::getUrl('index', panel: 'mahasiswa'))
@@ -199,7 +214,7 @@ it('shows simulated meeting link only after online booking is scheduled', functi
         'BKTS-20260705-000005',
         status: BookingKonseling::STATUS_DIJADWALKAN,
         link: 'https://meet.mock/BKTS-20260705-000005',
-        date: '2026-07-11',
+        day: JadwalKonseling::HARI_SELASA,
     );
 
     $this->actingAs($mahasiswa->user)
@@ -252,13 +267,13 @@ function createMahasiswaFeatureCounselor(string $name = 'Konselor Demo'): Konsel
 function createMahasiswaFeatureSchedule(
     string $method = JadwalKonseling::METODE_ONLINE,
     string $status = JadwalKonseling::STATUS_TERSEDIA,
-    string $date = '2026-07-10',
+    string $day = JadwalKonseling::HARI_SENIN,
 ): JadwalKonseling {
-    $konselor = createMahasiswaFeatureCounselor('Konselor ' . $date . ' ' . $method);
+    $konselor = createMahasiswaFeatureCounselor('Konselor ' . $day . ' ' . $method);
 
     return JadwalKonseling::create([
         'konselor_id' => $konselor->id,
-        'tanggal' => $date,
+        'hari' => $day,
         'jam_mulai' => '09:00:00',
         'jam_selesai' => '10:00:00',
         'metode' => $method,
@@ -271,7 +286,7 @@ function createMahasiswaFeatureBooking(
     string $code,
     string $status = BookingKonseling::STATUS_DIAJUKAN,
     ?string $link = null,
-    string $date = '2026-07-10',
+    string $day = JadwalKonseling::HARI_SENIN,
 ): BookingKonseling {
     $jadwal = createMahasiswaFeatureSchedule(
         status: in_array($status, [
@@ -282,7 +297,7 @@ function createMahasiswaFeatureBooking(
         ], true)
             ? JadwalKonseling::STATUS_TERPAKAI
             : JadwalKonseling::STATUS_TERSEDIA,
-        date: $date,
+        day: $day,
     );
 
     return BookingKonseling::create([

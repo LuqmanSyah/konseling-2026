@@ -85,7 +85,7 @@ class Dashboard extends BaseDashboard
                 BookingKonseling::STATUS_DIJADWALKAN,
             ])
             ->join('jadwal_konseling', 'booking_konseling.jadwal_id', '=', 'jadwal_konseling.id')
-            ->orderBy('jadwal_konseling.tanggal')
+            ->orderByRaw(\App\Models\JadwalKonseling::hariOrderCase('jadwal_konseling.hari'))
             ->orderBy('jadwal_konseling.jam_mulai')
             ->select('booking_konseling.*')
             ->first();

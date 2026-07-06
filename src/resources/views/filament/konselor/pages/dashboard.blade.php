@@ -27,7 +27,7 @@
                             <div class="min-w-0">
                                 <p class="truncate text-sm font-semibold text-gray-950 dark:text-white">{{ $booking->kode_booking }} - {{ $booking->mahasiswa->nama }}</p>
                                 <p class="truncate text-sm text-gray-500 dark:text-gray-400">
-                                    {{ $booking->jadwalKonseling->tanggal->format('d M Y') }}
+                                    {{ \App\Support\KonselingOptions::hariDalamMinggu()[$booking->jadwalKonseling->hari] ?? $booking->jadwalKonseling->hari }}
                                     {{ $booking->jadwalKonseling->jam_mulai->format('H:i') }}-{{ $booking->jadwalKonseling->jam_selesai->format('H:i') }}
                                     · {{ \App\Support\KonselingOptions::metodeKonseling()[$booking->metode] ?? $booking->metode }}
                                 </p>
@@ -71,7 +71,7 @@
                     <tr class="text-left text-xs font-semibold uppercase tracking-normal text-gray-500 dark:text-gray-400">
                         <th class="py-3 pr-4">Kode</th>
                         <th class="px-4 py-3">Mahasiswa</th>
-                        <th class="px-4 py-3">Tanggal</th>
+                        <th class="px-4 py-3">Hari</th>
                         <th class="px-4 py-3">Metode</th>
                         <th class="py-3 pl-4">Status</th>
                     </tr>
@@ -81,7 +81,7 @@
                         <tr>
                             <td class="py-3 pr-4 font-medium text-gray-950 dark:text-white">{{ $booking->kode_booking }}</td>
                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ $booking->mahasiswa->nama }}</td>
-                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ $booking->jadwalKonseling->tanggal->format('d M Y') }}</td>
+                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ \App\Support\KonselingOptions::hariDalamMinggu()[$booking->jadwalKonseling->hari] ?? $booking->jadwalKonseling->hari }}</td>
                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ \App\Support\KonselingOptions::metodeKonseling()[$booking->metode] ?? $booking->metode }}</td>
                             <td class="py-3 pl-4 text-gray-600 dark:text-gray-300">{{ \App\Support\KonselingOptions::bookingStatuses()[$booking->status] ?? $booking->status }}</td>
                         </tr>

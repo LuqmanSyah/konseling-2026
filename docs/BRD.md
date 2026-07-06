@@ -142,7 +142,7 @@ Fitur berikut tidak termasuk dalam MVP:
 1. Admin BKTS login ke sistem.
 2. Admin BKTS membuka menu jadwal konseling.
 3. Admin BKTS membuat jadwal konseling.
-4. Admin BKTS menentukan tanggal, jam, metode, dan konselor untuk jadwal tersebut.
+4. Admin BKTS menentukan hari dalam satu minggu, jam, metode, dan konselor untuk jadwal tersebut.
 5. Jadwal yang tersedia dapat dipilih oleh mahasiswa saat mengajukan konseling.
 6. Jika jadwal sudah dipilih oleh mahasiswa, jadwal tersebut tidak dapat dipilih oleh mahasiswa lain.
 7. Jika booking dibatalkan, jadwal dapat tersedia kembali.

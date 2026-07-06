@@ -194,7 +194,7 @@ function createKonselorFeatureBooking(Konselor $konselor, string $code): Booking
 
     $jadwal = JadwalKonseling::create([
         'konselor_id' => $konselor->id,
-        'tanggal' => '2026-07-10',
+        'hari' => JadwalKonseling::HARI_SENIN,
         'jam_mulai' => '09:00:00',
         'jam_selesai' => '10:00:00',
         'metode' => JadwalKonseling::METODE_ONLINE,

@@ -17,7 +17,7 @@ class BookingKonselingSeeder extends Seeder
         $mahasiswa = Mahasiswa::query()->where('email', 'mahasiswa@admin.com')->firstOrFail();
 
         foreach ($this->bookings() as $booking) {
-            $jadwal = $this->schedule($booking['tanggal'], $booking['jam_mulai']);
+            $jadwal = $this->schedule($booking['hari'], $booking['jam_mulai']);
 
             BookingKonseling::updateOrCreate(
                 ['kode_booking' => $booking['kode_booking']],
@@ -36,10 +36,10 @@ class BookingKonselingSeeder extends Seeder
         }
     }
 
-    private function schedule(string $tanggal, string $jamMulai): JadwalKonseling
+    private function schedule(string $hari, string $jamMulai): JadwalKonseling
     {
         return JadwalKonseling::query()
-            ->whereDate('tanggal', $tanggal)
+            ->where('hari', $hari)
             ->whereTime('jam_mulai', $jamMulai)
             ->firstOrFail();
     }
@@ -52,7 +52,7 @@ class BookingKonselingSeeder extends Seeder
         return [
             [
                 'kode_booking' => 'BKTS-DEMO-0001',
-                'tanggal' => now()->addDays(2)->toDateString(),
+                'hari' => JadwalKonseling::HARI_SELASA,
                 'jam_mulai' => '10:00:00',
                 'kategori' => BookingKonseling::KATEGORI_AKADEMIK,
                 'status' => BookingKonseling::STATUS_DIAJUKAN,
@@ -60,7 +60,7 @@ class BookingKonselingSeeder extends Seeder
             ],
             [
                 'kode_booking' => 'BKTS-DEMO-0002',
-                'tanggal' => now()->addDays(3)->toDateString(),
+                'hari' => JadwalKonseling::HARI_RABU,
                 'jam_mulai' => '13:00:00',
                 'kategori' => BookingKonseling::KATEGORI_NON_AKADEMIK,
                 'status' => BookingKonseling::STATUS_DIJADWALKAN,
@@ -69,7 +69,7 @@ class BookingKonselingSeeder extends Seeder
             ],
             [
                 'kode_booking' => 'BKTS-DEMO-0003',
-                'tanggal' => now()->subDays(3)->toDateString(),
+                'hari' => JadwalKonseling::HARI_KAMIS,
                 'jam_mulai' => '08:00:00',
                 'kategori' => BookingKonseling::KATEGORI_AKADEMIK,
                 'status' => BookingKonseling::STATUS_SELESAI,
@@ -77,7 +77,7 @@ class BookingKonselingSeeder extends Seeder
             ],
             [
                 'kode_booking' => 'BKTS-DEMO-0004',
-                'tanggal' => now()->subDays(2)->toDateString(),
+                'hari' => JadwalKonseling::HARI_JUMAT,
                 'jam_mulai' => '11:00:00',
                 'kategori' => BookingKonseling::KATEGORI_NON_AKADEMIK,
                 'status' => BookingKonseling::STATUS_DIRUJUK,
@@ -86,7 +86,7 @@ class BookingKonselingSeeder extends Seeder
             ],
             [
                 'kode_booking' => 'BKTS-DEMO-0005',
-                'tanggal' => now()->addDays(4)->toDateString(),
+                'hari' => JadwalKonseling::HARI_SABTU,
                 'jam_mulai' => '15:00:00',
                 'kategori' => BookingKonseling::KATEGORI_AKADEMIK,
                 'status' => BookingKonseling::STATUS_DIBATALKAN,

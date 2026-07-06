@@ -139,7 +139,7 @@ Fitur yang tidak termasuk dalam MVP:
 2. Sistem menampilkan dashboard Admin BKTS.
 3. Admin BKTS membuka menu jadwal konseling.
 4. Admin BKTS membuat jadwal konseling.
-5. Admin BKTS menentukan tanggal, jam, metode, dan konselor.
+5. Admin BKTS menentukan hari dalam satu minggu, jam, metode, dan konselor.
 6. Jadwal yang dibuat akan tampil sebagai jadwal tersedia untuk mahasiswa.
 7. Admin BKTS membuka menu pengajuan konseling.
 8. Admin BKTS melihat daftar pengajuan dengan status `Diajukan`.
@@ -274,10 +274,10 @@ Dashboard Super Admin menampilkan:
 | --- | --- |
 | Tujuan | Menyediakan jadwal konseling yang dapat dipilih mahasiswa. |
 | Aktor | Admin BKTS |
-| Input | Tanggal, jam mulai, jam selesai, metode, konselor, status jadwal |
-| Proses | Admin BKTS membuat jadwal dan menentukan konselor. |
+| Input | Hari dalam satu minggu, jam mulai, jam selesai, metode, konselor, status jadwal |
+| Proses | Admin BKTS membuat template jadwal mingguan dan menentukan konselor. |
 | Output | Jadwal tersedia tampil pada form pengajuan mahasiswa. |
-| Validasi | Tanggal dan jam wajib diisi, konselor wajib dipilih, jadwal tidak boleh bentrok untuk konselor yang sama. |
+| Validasi | Hari dan jam wajib diisi, konselor wajib dipilih, jadwal tidak boleh bentrok untuk konselor yang sama pada hari yang sama. |
 
 Status jadwal:
 
@@ -498,7 +498,7 @@ Komponen:
 
 - Daftar pengajuan konseling.
 - Status booking.
-- Tanggal dan jam konseling.
+- Hari dan jam konseling.
 - Metode konseling.
 - Link meeting simulasi jika online dan sudah dijadwalkan.
 - Detail pengajuan.
@@ -529,7 +529,7 @@ Komponen:
 - Daftar jadwal konseling.
 - Form tambah jadwal.
 - Form edit jadwal.
-- Tanggal.
+- Hari dalam satu minggu.
 - Jam mulai.
 - Jam selesai.
 - Metode konseling.
@@ -596,7 +596,7 @@ Komponen:
 
 - Daftar jadwal yang ditugaskan.
 - Nama mahasiswa.
-- Tanggal dan jam konseling.
+- Hari dan jam konseling.
 - Metode konseling.
 - Status booking.
 - Link meeting simulasi jika online.
@@ -711,7 +711,7 @@ Akses:
 | --- | --- | --- |
 | id | Integer | Primary key |
 | konselor_id | Integer | Relasi ke konselor |
-| tanggal | Date | Tanggal konseling |
+| hari | Enum/String | Hari konseling dalam satu minggu: `senin`, `selasa`, `rabu`, `kamis`, `jumat`, `sabtu`, `minggu` |
 | jam_mulai | Time | Jam mulai |
 | jam_selesai | Time | Jam selesai |
 | metode | Enum | `online`, `tatap_muka` |

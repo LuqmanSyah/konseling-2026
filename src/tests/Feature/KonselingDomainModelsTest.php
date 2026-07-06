@@ -37,7 +37,7 @@ it('creates the konseling domain tables with required columns', function (): voi
         ->and(Schema::hasColumns('jadwal_konseling', [
             'id',
             'konselor_id',
-            'tanggal',
+            'hari',
             'jam_mulai',
             'jam_selesai',
             'metode',
@@ -114,7 +114,7 @@ it('persists the primary konseling relationships', function (): void {
 
     $jadwal = JadwalKonseling::create([
         'konselor_id' => $konselor->id,
-        'tanggal' => '2026-07-06',
+        'hari' => JadwalKonseling::HARI_SENIN,
         'jam_mulai' => '09:00:00',
         'jam_selesai' => '10:00:00',
         'metode' => JadwalKonseling::METODE_ONLINE,

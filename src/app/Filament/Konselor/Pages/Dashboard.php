@@ -30,10 +30,9 @@ class Dashboard extends BaseDashboard
 
         return [
             [
-                'label' => 'Jadwal Hari Ini',
+                'label' => 'Slot Mingguan',
                 'value' => JadwalKonseling::query()
                     ->where('konselor_id', $konselor->id)
-                    ->whereDate('tanggal', now()->toDateString())
                     ->count(),
                 'icon' => 'heroicon-o-calendar-days',
                 'color' => 'text-teal-600',
@@ -88,9 +87,8 @@ class Dashboard extends BaseDashboard
         return $this->bookingQuery($konselor)
             ->with(['mahasiswa', 'jadwalKonseling'])
             ->where('booking_konseling.status', BookingKonseling::STATUS_DIJADWALKAN)
-            ->whereHas('jadwalKonseling', fn ($query) => $query->whereDate('tanggal', '>=', now()->toDateString()))
             ->join('jadwal_konseling', 'booking_konseling.jadwal_id', '=', 'jadwal_konseling.id')
-            ->orderBy('jadwal_konseling.tanggal')
+            ->orderByRaw(JadwalKonseling::hariOrderCase('jadwal_konseling.hari'))
             ->orderBy('jadwal_konseling.jam_mulai')
             ->select('booking_konseling.*')
             ->limit(5)

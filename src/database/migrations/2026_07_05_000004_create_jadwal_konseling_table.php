@@ -11,14 +11,14 @@ return new class extends Migration
         Schema::create('jadwal_konseling', function (Blueprint $table) {
             $table->id();
             $table->foreignId('konselor_id')->constrained('konselor')->cascadeOnDelete();
-            $table->date('tanggal')->index();
+            $table->string('hari')->index();
             $table->time('jam_mulai');
             $table->time('jam_selesai');
             $table->string('metode')->index();
             $table->string('status')->default('tersedia')->index();
             $table->timestamps();
 
-            $table->index(['konselor_id', 'tanggal', 'jam_mulai', 'jam_selesai'], 'jadwal_konseling_konselor_waktu_index');
+            $table->index(['konselor_id', 'hari', 'jam_mulai', 'jam_selesai'], 'jadwal_konseling_konselor_waktu_index');
         });
     }
 

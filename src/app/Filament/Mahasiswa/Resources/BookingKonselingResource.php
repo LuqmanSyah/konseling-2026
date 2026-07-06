@@ -84,13 +84,16 @@ class BookingKonselingResource extends Resource
                     ->label('Metode Konseling')
                     ->options(KonselingOptions::metodeKonseling())
                     ->live()
+                    ->afterStateUpdated(fn (Forms\Set $set): mixed => $set('jadwal_id', null))
                     ->required(),
-                Forms\Components\Select::make('jadwal_id')
+                Forms\Components\ViewField::make('jadwal_id')
                     ->label('Jadwal Tersedia')
-                    ->options(fn (Get $get): array => self::availableScheduleOptions($get('metode')))
-                    ->searchable()
-                    ->preload()
-                    ->required(),
+                    ->view('filament.mahasiswa.forms.schedule-table')
+                    ->viewData([
+                        'getSchedules' => fn (Get $get): array => self::availableScheduleRows($get('metode')),
+                    ])
+                    ->required()
+                    ->columnSpanFull(),
                 Forms\Components\Textarea::make('keluhan_awal')
                     ->label('Keluhan Awal')
                     ->required()
@@ -108,9 +111,9 @@ class BookingKonselingResource extends Resource
                     ->label('Kode')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('jadwalKonseling.tanggal')
-                    ->label('Tanggal')
-                    ->date('d M Y')
+                Tables\Columns\TextColumn::make('jadwalKonseling.hari')
+                    ->label('Hari')
+                    ->formatStateUsing(fn (string $state): string => KonselingOptions::hariDalamMinggu()[$state] ?? $state)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('jadwalKonseling.jam_mulai')
                     ->label('Mulai')
@@ -176,9 +179,9 @@ class BookingKonselingResource extends Resource
                         Infolists\Components\TextEntry::make('metode')
                             ->label('Metode')
                             ->formatStateUsing(fn (string $state): string => KonselingOptions::metodeKonseling()[$state] ?? $state),
-                        Infolists\Components\TextEntry::make('jadwalKonseling.tanggal')
-                            ->label('Tanggal')
-                            ->date('d M Y'),
+                        Infolists\Components\TextEntry::make('jadwalKonseling.hari')
+                            ->label('Hari')
+                            ->formatStateUsing(fn (string $state): string => KonselingOptions::hariDalamMinggu()[$state] ?? $state),
                         Infolists\Components\TextEntry::make('jadwalKonseling.jam_mulai')
                             ->label('Jam Mulai')
                             ->time('H:i'),
@@ -225,26 +228,22 @@ class BookingKonselingResource extends Resource
     /**
      * @return array<int, string>
      */
-    private static function availableScheduleOptions(?string $metode): array
+    public static function availableScheduleRows(?string $metode): array
     {
         return JadwalKonseling::query()
             ->with('konselor')
             ->where('status', JadwalKonseling::STATUS_TERSEDIA)
             ->when(filled($metode), fn (Builder $query): Builder => $query->where('metode', $metode))
-            ->whereDate('tanggal', '>=', now()->toDateString())
-            ->orderBy('tanggal')
+            ->orderByRaw(JadwalKonseling::hariOrderCase())
             ->orderBy('jam_mulai')
             ->limit(50)
             ->get()
-            ->mapWithKeys(fn (JadwalKonseling $jadwal): array => [
-                $jadwal->id => sprintf(
-                    '%s, %s-%s - %s (%s)',
-                    $jadwal->tanggal->format('d M Y'),
-                    $jadwal->jam_mulai->format('H:i'),
-                    $jadwal->jam_selesai->format('H:i'),
-                    $jadwal->konselor?->nama ?? 'Konselor',
-                    KonselingOptions::metodeKonseling()[$jadwal->metode] ?? $jadwal->metode,
-                ),
+            ->map(fn (JadwalKonseling $jadwal): array => [
+                'id' => $jadwal->id,
+                'hari' => KonselingOptions::hariDalamMinggu()[$jadwal->hari] ?? $jadwal->hari,
+                'jam' => $jadwal->jam_mulai->format('H:i') . ' - ' . $jadwal->jam_selesai->format('H:i'),
+                'konselor' => $jadwal->konselor?->nama ?? 'Konselor',
+                'metode' => KonselingOptions::metodeKonseling()[$jadwal->metode] ?? $jadwal->metode,
             ])
             ->all();
     }

@@ -82,9 +82,9 @@ class BookingKonselingResource extends Resource
                     ->label('Mahasiswa')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('jadwalKonseling.tanggal')
-                    ->label('Tanggal')
-                    ->date('d M Y')
+                Tables\Columns\TextColumn::make('jadwalKonseling.hari')
+                    ->label('Hari')
+                    ->formatStateUsing(fn (string $state): string => KonselingOptions::hariDalamMinggu()[$state] ?? $state)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('jadwalKonseling.jam_mulai')
                     ->label('Mulai')
@@ -148,9 +148,9 @@ class BookingKonselingResource extends Resource
                         Infolists\Components\TextEntry::make('metode')
                             ->label('Metode')
                             ->formatStateUsing(fn (string $state): string => KonselingOptions::metodeKonseling()[$state] ?? $state),
-                        Infolists\Components\TextEntry::make('jadwalKonseling.tanggal')
-                            ->label('Tanggal')
-                            ->date('d M Y'),
+                        Infolists\Components\TextEntry::make('jadwalKonseling.hari')
+                            ->label('Hari')
+                            ->formatStateUsing(fn (string $state): string => KonselingOptions::hariDalamMinggu()[$state] ?? $state),
                         Infolists\Components\TextEntry::make('jadwalKonseling.jam_mulai')
                             ->label('Jam Mulai')
                             ->time('H:i'),

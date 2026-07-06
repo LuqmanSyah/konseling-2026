@@ -11,6 +11,45 @@ class JadwalKonseling extends Model
 {
     use HasFactory;
 
+    public const HARI_SENIN = 'senin';
+
+    public const HARI_SELASA = 'selasa';
+
+    public const HARI_RABU = 'rabu';
+
+    public const HARI_KAMIS = 'kamis';
+
+    public const HARI_JUMAT = 'jumat';
+
+    public const HARI_SABTU = 'sabtu';
+
+    public const HARI_MINGGU = 'minggu';
+
+    public const HARIS = [
+        self::HARI_SENIN,
+        self::HARI_SELASA,
+        self::HARI_RABU,
+        self::HARI_KAMIS,
+        self::HARI_JUMAT,
+        self::HARI_SABTU,
+        self::HARI_MINGGU,
+    ];
+
+    public static function hariOrderCase(string $column = 'hari'): string
+    {
+        return sprintf(
+            "case %s when '%s' then 1 when '%s' then 2 when '%s' then 3 when '%s' then 4 when '%s' then 5 when '%s' then 6 when '%s' then 7 else 8 end",
+            $column,
+            self::HARI_SENIN,
+            self::HARI_SELASA,
+            self::HARI_RABU,
+            self::HARI_KAMIS,
+            self::HARI_JUMAT,
+            self::HARI_SABTU,
+            self::HARI_MINGGU,
+        );
+    }
+
     public const METODE_ONLINE = 'online';
 
     public const METODE_TATAP_MUKA = 'tatap_muka';
@@ -36,7 +75,7 @@ class JadwalKonseling extends Model
 
     protected $fillable = [
         'konselor_id',
-        'tanggal',
+        'hari',
         'jam_mulai',
         'jam_selesai',
         'metode',
@@ -46,7 +85,7 @@ class JadwalKonseling extends Model
     protected function casts(): array
     {
         return [
-            'tanggal' => 'date',
+            'hari' => 'string',
             'jam_mulai' => 'datetime:H:i:s',
             'jam_selesai' => 'datetime:H:i:s',
             'metode' => 'string',

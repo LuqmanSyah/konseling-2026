@@ -71,8 +71,7 @@ class Dashboard extends BaseDashboard
     {
         return JadwalKonseling::query()
             ->with('konselor')
-            ->whereDate('tanggal', '>=', now()->toDateString())
-            ->orderBy('tanggal')
+            ->orderByRaw(JadwalKonseling::hariOrderCase())
             ->orderBy('jam_mulai')
             ->limit(5)
             ->get();

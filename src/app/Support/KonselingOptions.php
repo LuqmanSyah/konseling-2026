@@ -69,6 +69,22 @@ class KonselingOptions
     /**
      * @return array<string, string>
      */
+    public static function hariDalamMinggu(): array
+    {
+        return [
+            JadwalKonseling::HARI_SENIN => 'Senin',
+            JadwalKonseling::HARI_SELASA => 'Selasa',
+            JadwalKonseling::HARI_RABU => 'Rabu',
+            JadwalKonseling::HARI_KAMIS => 'Kamis',
+            JadwalKonseling::HARI_JUMAT => 'Jumat',
+            JadwalKonseling::HARI_SABTU => 'Sabtu',
+            JadwalKonseling::HARI_MINGGU => 'Minggu',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
     public static function jadwalStatuses(): array
     {
         return [

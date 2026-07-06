@@ -75,7 +75,7 @@
                             <td class="py-3 pr-4 font-medium text-gray-950 dark:text-white">{{ $booking->kode_booking }}</td>
                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ $booking->mahasiswa->nama }}</td>
                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ $booking->konselor->nama }}</td>
-                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ $booking->jadwalKonseling->tanggal->format('d M Y') }}</td>
+                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ \App\Support\KonselingOptions::hariDalamMinggu()[$booking->jadwalKonseling->hari] ?? $booking->jadwalKonseling->hari }}</td>
                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ \App\Support\KonselingOptions::kategoriKonseling()[$booking->kategori] ?? $booking->kategori }}</td>
                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ \App\Support\KonselingOptions::metodeKonseling()[$booking->metode] ?? $booking->metode }}</td>
                             <td class="py-3 pl-4 text-gray-600 dark:text-gray-300">{{ \App\Support\KonselingOptions::bookingStatuses()[$booking->status] ?? $booking->status }}</td>

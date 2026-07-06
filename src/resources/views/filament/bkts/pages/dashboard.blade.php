@@ -59,13 +59,13 @@
     </div>
 
     <x-filament::section>
-        <x-slot name="heading">Jadwal Hari Ini dan Mendatang</x-slot>
+        <x-slot name="heading">Jadwal Mingguan</x-slot>
 
         <div class="overflow-x-auto">
             <table class="w-full divide-y divide-gray-200 text-sm dark:divide-gray-800">
                 <thead>
                     <tr class="text-left text-xs font-semibold uppercase tracking-normal text-gray-500 dark:text-gray-400">
-                        <th class="py-3 pr-4">Tanggal</th>
+                        <th class="py-3 pr-4">Hari</th>
                         <th class="px-4 py-3">Waktu</th>
                         <th class="px-4 py-3">Konselor</th>
                         <th class="px-4 py-3">Metode</th>
@@ -75,7 +75,7 @@
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                     @forelse ($this->getUpcomingSchedules() as $jadwal)
                         <tr>
-                            <td class="py-3 pr-4 font-medium text-gray-950 dark:text-white">{{ $jadwal->tanggal->format('d M Y') }}</td>
+                            <td class="py-3 pr-4 font-medium text-gray-950 dark:text-white">{{ \App\Support\KonselingOptions::hariDalamMinggu()[$jadwal->hari] ?? $jadwal->hari }}</td>
                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ $jadwal->jam_mulai->format('H:i') }} - {{ $jadwal->jam_selesai->format('H:i') }}</td>
                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ $jadwal->konselor->nama }}</td>
                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ \App\Support\KonselingOptions::metodeKonseling()[$jadwal->metode] ?? $jadwal->metode }}</td>
@@ -83,7 +83,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-4 text-gray-500 dark:text-gray-400">Belum ada jadwal mendatang.</td>
+                            <td colspan="5" class="py-4 text-gray-500 dark:text-gray-400">Belum ada jadwal mingguan.</td>
                         </tr>
                     @endforelse
                 </tbody>

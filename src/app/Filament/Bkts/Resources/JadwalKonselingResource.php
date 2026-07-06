@@ -51,9 +51,9 @@ class JadwalKonselingResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required(),
-                Forms\Components\DatePicker::make('tanggal')
-                    ->label('Tanggal')
-                    ->native(false)
+                Forms\Components\Select::make('hari')
+                    ->label('Hari')
+                    ->options(KonselingOptions::hariDalamMinggu())
                     ->required(),
                 Forms\Components\TimePicker::make('jam_mulai')
                     ->label('Jam Mulai')
@@ -63,7 +63,7 @@ class JadwalKonselingResource extends Resource
                     ->label('Jam Selesai')
                     ->seconds(false)
                     ->rules([
-                        fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
+                        fn (Get $get, ?JadwalKonseling $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
                             $start = $get('jam_mulai');
 
                             if (blank($start) || blank($value)) {
@@ -72,6 +72,27 @@ class JadwalKonselingResource extends Resource
 
                             if (strtotime('1970-01-01 ' . $value) <= strtotime('1970-01-01 ' . $start)) {
                                 $fail('Jam selesai harus setelah jam mulai.');
+
+                                return;
+                            }
+
+                            $konselorId = $get('konselor_id');
+                            $hari = $get('hari');
+
+                            if (blank($konselorId) || blank($hari)) {
+                                return;
+                            }
+
+                            $hasOverlap = JadwalKonseling::query()
+                                ->where('konselor_id', $konselorId)
+                                ->where('hari', $hari)
+                                ->when($record !== null, fn (Builder $query): Builder => $query->whereKeyNot($record->getKey()))
+                                ->whereTime('jam_mulai', '<', $value)
+                                ->whereTime('jam_selesai', '>', $start)
+                                ->exists();
+
+                            if ($hasOverlap) {
+                                $fail('Jadwal bentrok dengan slot konselor yang sudah ada pada hari tersebut.');
                             }
                         },
                     ])
@@ -97,9 +118,9 @@ class JadwalKonselingResource extends Resource
                     ->label('Konselor')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal')
-                    ->label('Tanggal')
-                    ->date('d M Y')
+                Tables\Columns\TextColumn::make('hari')
+                    ->label('Hari')
+                    ->formatStateUsing(fn (string $state): string => KonselingOptions::hariDalamMinggu()[$state] ?? $state)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('jam_mulai')
                     ->label('Mulai')
@@ -136,6 +157,9 @@ class JadwalKonselingResource extends Resource
                 Tables\Filters\SelectFilter::make('metode')
                     ->label('Metode')
                     ->options(KonselingOptions::metodeKonseling()),
+                Tables\Filters\SelectFilter::make('hari')
+                    ->label('Hari')
+                    ->options(KonselingOptions::hariDalamMinggu()),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
